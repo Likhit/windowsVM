@@ -20,8 +20,9 @@ in
     };
 
     gpu.pciId = lib.mkOption {
-      type = lib.types.str;
-      description = "PCI address of the GPU to pass through (e.g. 0000:00:02.0).";
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "PCI address of the GPU to pass through (e.g. 0000:00:02.0). Set to null to run without GPU passthrough (SPICE-only).";
     };
 
     gpu.audioFunction = lib.mkOption {
@@ -51,8 +52,8 @@ in
     lookingGlass = {
       enable = lib.mkOption {
         type = lib.types.bool;
-        default = true;
-        description = "Enable Looking Glass (IVSHMEM) for display.";
+        default = cfg.gpu.pciId != null;
+        description = "Enable Looking Glass (IVSHMEM) for display. Defaults to true when gpu.pciId is set.";
       };
 
       sharedMemoryMB = lib.mkOption {

@@ -92,16 +92,16 @@ in
     touch $out
   '';
 
-  # Test: evaluation fails when gpu.pciId is missing
-  eval-missing-gpu = pkgs.runCommand "eval-missing-gpu" {} ''
-    ${if evalFails {
+  # Test: module evaluates without gpu.pciId (SPICE-only mode)
+  eval-no-gpu = pkgs.runCommand "eval-no-gpu" {} ''
+    ${if evalEnabledSucceeds {
         windowsVM = {
           enable = true;
           isoPath = "/path/to/Win11.iso";
         };
       }
-      then "echo 'PASS: evaluation fails when gpu.pciId is missing'"
-      else builtins.throw "FAIL: evaluation should fail when gpu.pciId is missing"}
+      then "echo 'PASS: module evaluates without gpu.pciId (SPICE-only)'"
+      else builtins.throw "FAIL: module should evaluate without gpu.pciId"}
     touch $out
   '';
 }
