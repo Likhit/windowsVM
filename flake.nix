@@ -34,6 +34,10 @@
         inherit pkgs;
         module = self.nixosModules.default;
       }) //
+      (import ./tests/usb.nix {
+        inherit pkgs;
+        module = self.nixosModules.default;
+      }) //
       {
         vm-basic = import ./tests/vm-basic.nix {
           inherit pkgs;
