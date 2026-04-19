@@ -9,6 +9,7 @@ in
     ./libvirt.nix
     ./looking-glass.nix
     ./vm-domain.nix
+    ./app-launcher.nix
   ];
 
   options.windowsVM = {
@@ -61,6 +62,12 @@ in
         default = 32;
         description = "Shared memory size in MiB for Looking Glass (32 for ≤1440p, 64 for 4K).";
       };
+    };
+
+    appName = lib.mkOption {
+      type = lib.types.str;
+      default = "Windows 11";
+      description = "Name of the desktop application entry for launching the VM.";
     };
 
     usb.devices = lib.mkOption {
