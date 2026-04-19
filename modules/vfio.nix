@@ -2,15 +2,13 @@
 
 let
   cfg = config.windowsVM;
-  kernelParams = config.boot.kernelParams or [];
-  initrdModules = config.boot.initrd.kernelModules or [];
 in
 {
   config = lib.mkIf cfg.enable {
     assertions = [
       {
         assertion =
-          builtins.any (p: p == "intel_iommu=on" || p == "amd_iommu=on") kernelParams;
+          builtins.any (p: p == "intel_iommu=on" || p == "amd_iommu=on") config.boot.kernelParams;
         message = ''
           windowsVM requires IOMMU to be enabled in kernel params.
           Add to your NixOS configuration:
@@ -18,7 +16,7 @@ in
         '';
       }
       {
-        assertion = builtins.elem "iommu=pt" kernelParams;
+        assertion = builtins.elem "iommu=pt" config.boot.kernelParams;
         message = ''
           windowsVM requires IOMMU passthrough mode.
           Add to your NixOS configuration:
@@ -27,9 +25,9 @@ in
       }
       {
         assertion =
-          builtins.elem "vfio_pci" initrdModules
-          && builtins.elem "vfio" initrdModules
-          && builtins.elem "vfio_iommu_type1" initrdModules;
+          builtins.elem "vfio_pci" config.boot.initrd.kernelModules
+          && builtins.elem "vfio" config.boot.initrd.kernelModules
+          && builtins.elem "vfio_iommu_type1" config.boot.initrd.kernelModules;
         message = ''
           windowsVM requires VFIO kernel modules loaded in initrd.
           Add to your NixOS configuration:
