@@ -110,30 +110,31 @@ The ISO is referenced at runtime by path — it is **not** copied into the Nix s
 sudo nixos-rebuild switch --flake .#myhost
 ```
 
-### 6. Start the VM
+### 6. Launch the VM
+
+The module installs a desktop application (named by `windowsVM.appName`, default "Windows 11") in your app launcher. Click it to start the VM and connect to the display automatically.
+
+The launcher handles:
+- Starting the VM if it's not already running
+- Re-defining the domain if the XML has changed (e.g. after a flake update)
+- Connecting via `looking-glass-client` (with GPU passthrough) or `virt-viewer` (SPICE-only)
+
+You can also launch from the terminal:
 
 ```bash
-virsh start win11
-
-# Connect via SPICE to watch the install and interact with the VM
-virt-viewer win11
+# The launcher script is available as a desktop app, or use virsh directly:
+sudo virsh start win11
+virt-viewer -c qemu:///system win11
 ```
 
 On first boot, you will need to install Windows manually through the installer. The VirtIO drivers are automatically available on the second CD-ROM (drive `E:`). When the installer asks for a disk driver, browse to `E:\viostor\w11\amd64`.
-
-### 7. Use Looking Glass
-
-After Windows is installed and the Looking Glass host app is running in the guest:
-
-```bash
-looking-glass-client
-```
 
 ## Option Reference
 
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `windowsVM.enable` | bool | `false` | Enable the Windows 11 VM |
+| `windowsVM.appName` | string | `"Windows 11"` | Name of the desktop app launcher |
 | `windowsVM.isoPath` | string | *required* | Runtime path to Windows 11 ISO |
 | `windowsVM.gpu.pciId` | string or null | `null` | PCI address of GPU to pass through (null for SPICE-only) |
 | `windowsVM.gpu.audioFunction` | string or null | `null` | PCI function of GPU audio device (e.g. `"1"` for discrete GPUs) |
