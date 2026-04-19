@@ -14,6 +14,14 @@ let
   # Audio function is typically .1 on the same device
   pciAudioFunction = "0x1";
 
+  # IVSHMEM shared memory for Looking Glass (conditional)
+  shmemConfig = if cfg.lookingGlass.enable then ''
+    <!-- Looking Glass IVSHMEM -->
+    <shmem name="looking-glass">
+      <model type="ivshmem-plain"/>
+      <size unit="M">${toString cfg.lookingGlass.sharedMemoryMB}</size>
+    </shmem>'' else "";
+
   domainXML = pkgs.replaceVars ../resources/win11-domain.xml.in {
     memory = toString cfg.memory;
     vcpus = toString cfg.vcpus;
@@ -21,7 +29,7 @@ let
     ovmfVars = "${pkgs.OVMFFull.fd}/FV/OVMF_VARS.ms.fd";
     qemuBin = "${pkgs.qemu}/bin/qemu-system-x86_64";
     isoPath = cfg.isoPath;
-    inherit virtioIso pciDomain pciBus pciSlot pciFunction pciAudioFunction;
+    inherit virtioIso pciDomain pciBus pciSlot pciFunction pciAudioFunction shmemConfig;
   };
 in
 {
