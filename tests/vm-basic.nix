@@ -12,6 +12,10 @@ pkgs.testers.nixosTest {
       gpu.pciId = "0000:00:02.0";
     };
 
+    # Host prerequisites required by windowsVM assertions
+    boot.kernelParams = [ "intel_iommu=on" "iommu=pt" ];
+    boot.initrd.kernelModules = [ "vfio_pci" "vfio" "vfio_iommu_type1" ];
+
     virtualisation.libvirtd = {
       enable = true;
       qemu.swtpm.enable = true;
