@@ -22,6 +22,10 @@
         inherit pkgs;
         module = self.nixosModules.default;
       }) //
+      (import ./tests/domain-xml-gpu.nix {
+        inherit pkgs;
+        module = self.nixosModules.default;
+      }) //
       (import ./tests/assertions.nix {
         inherit pkgs;
         module = self.nixosModules.default;

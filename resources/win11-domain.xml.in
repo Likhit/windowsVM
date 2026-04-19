@@ -123,6 +123,21 @@
       <target type="serial" port="0"/>
     </console>
 
+    <!-- GPU passthrough (VFIO) -->
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source>
+        <address domain="@pciDomain@" bus="@pciBus@" slot="@pciSlot@" function="@pciFunction@"/>
+      </source>
+      <address type="pci" multifunction="on"/>
+    </hostdev>
+
+    <!-- GPU audio device (typically function .1 on same device) -->
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source>
+        <address domain="@pciDomain@" bus="@pciBus@" slot="@pciSlot@" function="@pciAudioFunction@"/>
+      </source>
+    </hostdev>
+
     <!-- Channel for QEMU guest agent -->
     <channel type="unix">
       <target type="virtio" name="org.qemu.guest_agent.0"/>
