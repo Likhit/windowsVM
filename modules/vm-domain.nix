@@ -14,6 +14,15 @@ let
   # Audio function is typically .1 on the same device
   pciAudioFunction = "0x1";
 
+  # USB device passthrough (conditional)
+  usbDevicesConfig = lib.concatMapStringsSep "\n" (dev: ''
+    <hostdev mode="subsystem" type="usb" managed="yes">
+      <source>
+        <vendor id="0x${dev.vendorId}"/>
+        <product id="0x${dev.productId}"/>
+      </source>
+    </hostdev>'') cfg.usb.devices;
+
   # IVSHMEM shared memory for Looking Glass (conditional)
   shmemConfig = if cfg.lookingGlass.enable then ''
     <!-- Looking Glass IVSHMEM -->
@@ -29,7 +38,7 @@ let
     ovmfVars = "${pkgs.OVMFFull.fd}/FV/OVMF_VARS.ms.fd";
     qemuBin = "${pkgs.qemu}/bin/qemu-system-x86_64";
     isoPath = cfg.isoPath;
-    inherit virtioIso pciDomain pciBus pciSlot pciFunction pciAudioFunction shmemConfig;
+    inherit virtioIso pciDomain pciBus pciSlot pciFunction pciAudioFunction shmemConfig usbDevicesConfig;
   };
 in
 {
