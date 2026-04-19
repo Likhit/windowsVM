@@ -22,6 +22,10 @@
         inherit pkgs;
         module = self.nixosModules.default;
       }) //
+      (import ./tests/assertions.nix {
+        inherit pkgs;
+        module = self.nixosModules.default;
+      }) //
       {
         vm-basic = import ./tests/vm-basic.nix {
           inherit pkgs;
