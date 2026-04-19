@@ -68,6 +68,7 @@ windowsVM = {
   enable = true;
   isoPath = "/var/lib/libvirt/images/Win11.iso";  # runtime path, not copied to Nix store
   gpu.pciId = "0000:00:02.0";                     # PCI address of passthrough GPU
+  # gpu.audioFunction = "1";                      # set if GPU has audio device (discrete GPUs)
 
   # Optional (shown with defaults)
   vcpus = 16;
@@ -131,6 +132,7 @@ looking-glass-client
 | `windowsVM.enable` | bool | `false` | Enable the Windows 11 VM |
 | `windowsVM.isoPath` | string | *required* | Runtime path to Windows 11 ISO |
 | `windowsVM.gpu.pciId` | string | *required* | PCI address of GPU to pass through |
+| `windowsVM.gpu.audioFunction` | string or null | `null` | PCI function of GPU audio device (e.g. `"1"` for discrete GPUs) |
 | `windowsVM.vcpus` | int | `16` | Number of virtual CPUs |
 | `windowsVM.memory` | int | `32768` | Memory in MiB |
 | `windowsVM.diskSize` | int | `128` | Disk size in GiB (thin-provisioned) |
