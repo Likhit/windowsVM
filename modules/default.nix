@@ -24,6 +24,12 @@ in
       description = "PCI address of the GPU to pass through (e.g. 0000:00:02.0).";
     };
 
+    gpu.audioFunction = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "PCI function of the GPU audio device (e.g. \"1\"). Set to null if the GPU has no audio device. Discrete GPUs typically have audio on function 1.";
+    };
+
     vcpus = lib.mkOption {
       type = lib.types.int;
       default = 16;

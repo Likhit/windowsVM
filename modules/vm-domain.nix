@@ -11,8 +11,14 @@ let
   pciBus = "0x${builtins.elemAt pciParts 1}";
   pciSlot = "0x${builtins.elemAt pciParts 2}";
   pciFunction = "0x${builtins.elemAt pciParts 3}";
-  # Audio function is typically .1 on the same device
-  pciAudioFunction = "0x1";
+  # GPU audio device (conditional — some GPUs don't have one)
+  gpuAudioConfig = if cfg.gpu.audioFunction != null then ''
+    <!-- GPU audio device (function .${cfg.gpu.audioFunction} on same device) -->
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source>
+        <address domain="${pciDomain}" bus="${pciBus}" slot="${pciSlot}" function="0x${cfg.gpu.audioFunction}"/>
+      </source>
+    </hostdev>'' else "";
 
   # USB device passthrough (conditional)
   usbDevicesConfig = lib.concatMapStringsSep "\n" (dev: ''
@@ -38,7 +44,7 @@ let
     ovmfVars = "${pkgs.OVMFFull.fd}/FV/OVMF_VARS.ms.fd";
     qemuBin = "${pkgs.qemu}/bin/qemu-system-x86_64";
     isoPath = cfg.isoPath;
-    inherit virtioIso pciDomain pciBus pciSlot pciFunction pciAudioFunction shmemConfig usbDevicesConfig;
+    inherit virtioIso pciDomain pciBus pciSlot pciFunction gpuAudioConfig shmemConfig usbDevicesConfig;
   };
 in
 {

@@ -131,12 +131,7 @@
       <address type="pci" multifunction="on"/>
     </hostdev>
 
-    <!-- GPU audio device (typically function .1 on same device) -->
-    <hostdev mode="subsystem" type="pci" managed="yes">
-      <source>
-        <address domain="@pciDomain@" bus="@pciBus@" slot="@pciSlot@" function="@pciAudioFunction@"/>
-      </source>
-    </hostdev>
+    @gpuAudioConfig@
 
     <!-- Channel for QEMU guest agent -->
     <channel type="unix">
