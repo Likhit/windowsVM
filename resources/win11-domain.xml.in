@@ -88,6 +88,14 @@
       <readonly/>
     </disk>
 
+    <!-- Unattended install ISO (autounattend.xml + debloat.ps1) -->
+    <disk type="file" device="cdrom">
+      <driver name="qemu" type="raw"/>
+      <source file="@unattendedIso@"/>
+      <target dev="sdc" bus="sata"/>
+      <readonly/>
+    </disk>
+
     <!-- VirtIO NIC on default NAT -->
     <interface type="network">
       <source network="default"/>

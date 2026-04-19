@@ -5,6 +5,16 @@ let
 
   virtioIso = pkgs.virtio-win.src;
 
+  # Unattended install ISO (autounattend.xml + debloat.ps1)
+  unattendedIso = pkgs.runCommand "win11-unattended.iso" {
+    nativeBuildInputs = [ pkgs.cdrkit ];
+  } ''
+    mkdir -p staging
+    cp ${../windows/autounattend.xml} staging/autounattend.xml
+    cp ${../windows/debloat.ps1} staging/debloat.ps1
+    mkisofs -o $out -J -r -V "UNATTEND" staging/
+  '';
+
   hasGpu = cfg.gpu.pciId != null;
 
   # Parse PCI address "0000:00:02.0" into components (only when GPU is configured)
@@ -58,7 +68,7 @@ let
     ovmfVars = "${pkgs.OVMFFull.fd}/FV/OVMF_VARS.ms.fd";
     qemuBin = "${pkgs.qemu}/bin/qemu-system-x86_64";
     isoPath = cfg.isoPath;
-    inherit virtioIso gpuConfig gpuAudioConfig shmemConfig usbDevicesConfig;
+    inherit unattendedIso virtioIso gpuConfig gpuAudioConfig shmemConfig usbDevicesConfig;
   };
 in
 {
