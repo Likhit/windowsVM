@@ -3,7 +3,7 @@
 let
   cfg = config.windowsVM;
 
-  virtioIso = pkgs.callPackage ../resources/virtio-win.nix {};
+  virtioIso = pkgs.virtio-win.src;
 
   domainXML = pkgs.replaceVars ../resources/win11-domain.xml.in {
     memory = toString cfg.memory;

@@ -28,6 +28,7 @@ pkgs.testers.nixosTest {
     machine.start()
     machine.wait_for_unit("libvirtd.service")
     machine.wait_for_unit("windowsvm-disk.service")
+    machine.wait_for_unit("windowsvm-define.service")
 
     # Verify the domain XML file is deployed
     machine.succeed("test -f /etc/libvirt/qemu/win11.xml")
@@ -35,10 +36,7 @@ pkgs.testers.nixosTest {
     # Validate the XML
     machine.succeed("virt-xml-validate /etc/libvirt/qemu/win11.xml domain")
 
-    # Define the domain
-    machine.succeed("virsh define /etc/libvirt/qemu/win11.xml")
-
-    # Check the domain is listed as shut off
+    # Domain should already be defined by the systemd service
     result = machine.succeed("virsh list --all")
     assert "win11" in result, f"win11 not found in virsh list output: {result}"
     assert "shut off" in result, f"win11 not in 'shut off' state: {result}"
