@@ -5,6 +5,15 @@ let
 
   virtioIso = pkgs.virtio-win.src;
 
+  # Parse PCI address "0000:00:02.0" into components
+  pciParts = builtins.match "([0-9a-fA-F]+):([0-9a-fA-F]+):([0-9a-fA-F]+)\\.([0-9a-fA-F]+)" cfg.gpu.pciId;
+  pciDomain = "0x${builtins.elemAt pciParts 0}";
+  pciBus = "0x${builtins.elemAt pciParts 1}";
+  pciSlot = "0x${builtins.elemAt pciParts 2}";
+  pciFunction = "0x${builtins.elemAt pciParts 3}";
+  # Audio function is typically .1 on the same device
+  pciAudioFunction = "0x1";
+
   domainXML = pkgs.replaceVars ../resources/win11-domain.xml.in {
     memory = toString cfg.memory;
     vcpus = toString cfg.vcpus;
@@ -12,7 +21,7 @@ let
     ovmfVars = "${pkgs.OVMFFull.fd}/FV/OVMF_VARS.ms.fd";
     qemuBin = "${pkgs.qemu}/bin/qemu-system-x86_64";
     isoPath = cfg.isoPath;
-    inherit virtioIso;
+    inherit virtioIso pciDomain pciBus pciSlot pciFunction pciAudioFunction;
   };
 in
 {
