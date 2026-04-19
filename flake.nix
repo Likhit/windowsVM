@@ -11,9 +11,20 @@
   in {
     nixosModules.default = import ./modules/default.nix;
 
-    checks.${system} = import ./tests/eval.nix {
-      inherit pkgs;
-      module = self.nixosModules.default;
-    };
+    checks.${system} =
+      (import ./tests/eval.nix {
+        inherit pkgs;
+        module = self.nixosModules.default;
+      }) //
+      (import ./tests/domain-xml.nix {
+        inherit pkgs;
+        module = self.nixosModules.default;
+      }) //
+      {
+        vm-basic = import ./tests/vm-basic.nix {
+          inherit pkgs;
+          module = self.nixosModules.default;
+        };
+      };
   };
 }
