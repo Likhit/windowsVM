@@ -5,14 +5,28 @@ let
 
   virtioIso = pkgs.virtio-win.src;
 
-  # Parse PCI address "0000:00:02.0" into components
-  pciParts = builtins.match "([0-9a-fA-F]+):([0-9a-fA-F]+):([0-9a-fA-F]+)\\.([0-9a-fA-F]+)" cfg.gpu.pciId;
-  pciDomain = "0x${builtins.elemAt pciParts 0}";
-  pciBus = "0x${builtins.elemAt pciParts 1}";
-  pciSlot = "0x${builtins.elemAt pciParts 2}";
-  pciFunction = "0x${builtins.elemAt pciParts 3}";
-  # GPU audio device (conditional — some GPUs don't have one)
-  gpuAudioConfig = if cfg.gpu.audioFunction != null then ''
+  hasGpu = cfg.gpu.pciId != null;
+
+  # Parse PCI address "0000:00:02.0" into components (only when GPU is configured)
+  pciParts = lib.optionals hasGpu
+    (builtins.match "([0-9a-fA-F]+):([0-9a-fA-F]+):([0-9a-fA-F]+)\\.([0-9a-fA-F]+)" cfg.gpu.pciId);
+  pciDomain = if hasGpu then "0x${builtins.elemAt pciParts 0}" else "";
+  pciBus = if hasGpu then "0x${builtins.elemAt pciParts 1}" else "";
+  pciSlot = if hasGpu then "0x${builtins.elemAt pciParts 2}" else "";
+  pciFunction = if hasGpu then "0x${builtins.elemAt pciParts 3}" else "";
+
+  # GPU passthrough hostdev (conditional)
+  gpuConfig = if hasGpu then ''
+    <!-- GPU passthrough (VFIO) -->
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source>
+        <address domain="${pciDomain}" bus="${pciBus}" slot="${pciSlot}" function="${pciFunction}"/>
+      </source>
+      <address type="pci" multifunction="on"/>
+    </hostdev>'' else "";
+
+  # GPU audio device (conditional)
+  gpuAudioConfig = if hasGpu && cfg.gpu.audioFunction != null then ''
     <!-- GPU audio device (function .${cfg.gpu.audioFunction} on same device) -->
     <hostdev mode="subsystem" type="pci" managed="yes">
       <source>
@@ -44,7 +58,7 @@ let
     ovmfVars = "${pkgs.OVMFFull.fd}/FV/OVMF_VARS.ms.fd";
     qemuBin = "${pkgs.qemu}/bin/qemu-system-x86_64";
     isoPath = cfg.isoPath;
-    inherit virtioIso pciDomain pciBus pciSlot pciFunction gpuAudioConfig shmemConfig usbDevicesConfig;
+    inherit virtioIso gpuConfig gpuAudioConfig shmemConfig usbDevicesConfig;
   };
 in
 {

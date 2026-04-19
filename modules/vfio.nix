@@ -4,7 +4,7 @@ let
   cfg = config.windowsVM;
 in
 {
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf (cfg.enable && cfg.gpu.pciId != null) {
     assertions = [
       {
         assertion =

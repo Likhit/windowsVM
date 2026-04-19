@@ -11,7 +11,15 @@ let
       ({ lib, ... }: {
         options = {
           boot = lib.mkOption { type = lib.types.anything; default = {}; };
-          environment = lib.mkOption { type = lib.types.anything; default = {}; };
+          environment = lib.mkOption {
+            type = lib.types.submodule {
+              options = {
+                systemPackages = lib.mkOption { type = lib.types.listOf lib.types.package; default = []; };
+                etc = lib.mkOption { type = lib.types.anything; default = {}; };
+              };
+            };
+            default = {};
+          };
           services = lib.mkOption { type = lib.types.anything; default = {}; };
           virtualisation = lib.mkOption { type = lib.types.anything; default = {}; };
           networking = lib.mkOption { type = lib.types.anything; default = {}; };
@@ -165,6 +173,21 @@ in
       in if failed == []
         then "echo 'PASS: AMD IOMMU param accepted'"
         else builtins.throw "FAIL: AMD IOMMU should be accepted"}
+    touch $out
+  '';
+
+  # Test: no VFIO assertions fire when gpu.pciId is null (SPICE-only mode)
+  assert-no-gpu-no-vfio = pkgs.runCommand "assert-no-gpu-no-vfio" {} ''
+    ${let failed = getFailedAssertions {
+        windowsVM = {
+          enable = true;
+          isoPath = "/path/to/Win11.iso";
+        };
+        virtualisation.libvirtd = { enable = true; qemu.swtpm.enable = true; };
+      };
+      in if failed == []
+        then "echo 'PASS: no VFIO assertions when gpu.pciId is null'"
+        else builtins.throw "FAIL: VFIO assertions should not fire without GPU: ${builtins.toJSON (map (a: a.message) failed)}"}
     touch $out
   '';
 }

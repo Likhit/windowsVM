@@ -123,13 +123,7 @@
       <target type="serial" port="0"/>
     </console>
 
-    <!-- GPU passthrough (VFIO) -->
-    <hostdev mode="subsystem" type="pci" managed="yes">
-      <source>
-        <address domain="@pciDomain@" bus="@pciBus@" slot="@pciSlot@" function="@pciFunction@"/>
-      </source>
-      <address type="pci" multifunction="on"/>
-    </hostdev>
+    @gpuConfig@
 
     @gpuAudioConfig@
 

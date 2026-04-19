@@ -17,7 +17,15 @@ let
       ({ lib, ... }: {
         options = {
           boot = lib.mkOption { type = lib.types.anything; default = {}; };
-          environment = lib.mkOption { type = lib.types.anything; default = {}; };
+          environment = lib.mkOption {
+            type = lib.types.submodule {
+              options = {
+                systemPackages = lib.mkOption { type = lib.types.listOf lib.types.package; default = []; };
+                etc = lib.mkOption { type = lib.types.anything; default = {}; };
+              };
+            };
+            default = {};
+          };
           services = lib.mkOption { type = lib.types.anything; default = {}; };
           virtualisation = lib.mkOption { type = lib.types.anything; default = {}; };
           networking = lib.mkOption { type = lib.types.anything; default = {}; };

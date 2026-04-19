@@ -34,10 +34,18 @@ A NixOS flake module that provisions a Windows 11 VM with VFIO GPU passthrough, 
 
 ### 2. Configure host prerequisites
 
-The module asserts that host infrastructure is configured correctly. Add these to your NixOS configuration:
+Add libvirt to your NixOS configuration:
 
 ```nix
-# IOMMU and VFIO
+virtualisation.libvirtd = {
+  enable = true;
+  qemu.swtpm.enable = true;
+};
+```
+
+**If using GPU passthrough** (`gpu.pciId` is set), you also need IOMMU and VFIO:
+
+```nix
 boot.kernelParams = [
   "amd_iommu=on"   # or "intel_iommu=on" for Intel
   "iommu=pt"
@@ -51,14 +59,8 @@ boot.initrd.kernelModules = [
 
 # Bind the passthrough GPU to vfio-pci (use your GPU's PCI IDs)
 boot.extraModprobeConfig = ''
-  options vfio-pci ids=8086:4680,8086:4692
+  options vfio-pci ids=10de:2484,10de:228b
 '';
-
-# Libvirt
-virtualisation.libvirtd = {
-  enable = true;
-  qemu.swtpm.enable = true;
-};
 ```
 
 ### 3. Configure the VM
@@ -67,15 +69,17 @@ virtualisation.libvirtd = {
 windowsVM = {
   enable = true;
   isoPath = "/var/lib/libvirt/images/Win11.iso";  # runtime path, not copied to Nix store
-  gpu.pciId = "0000:00:02.0";                     # PCI address of passthrough GPU
-  # gpu.audioFunction = "1";                      # set if GPU has audio device (discrete GPUs)
+
+  # GPU passthrough (optional — omit for SPICE-only VM)
+  # gpu.pciId = "0000:01:00.0";                   # PCI address of passthrough GPU
+  # gpu.audioFunction = "1";                       # set if GPU has audio device (discrete GPUs)
 
   # Optional (shown with defaults)
   vcpus = 16;
   memory = 32768;                  # MiB
   diskSize = 128;                  # GiB, qcow2 thin-provisioned
-  lookingGlass.enable = true;
-  lookingGlass.sharedMemoryMB = 32;  # 32 for <=1440p, 64 for 4K
+  # lookingGlass.enable = true;    # auto-enabled when gpu.pciId is set
+  # lookingGlass.sharedMemoryMB = 32;  # 32 for <=1440p, 64 for 4K
 
   # USB passthrough (optional)
   usb.devices = [
@@ -106,37 +110,38 @@ The ISO is referenced at runtime by path — it is **not** copied into the Nix s
 sudo nixos-rebuild switch --flake .#myhost
 ```
 
-### 6. Start the VM
+### 6. Launch the VM
+
+The module installs a desktop application (named by `windowsVM.appName`, default "Windows 11") in your app launcher. Click it to start the VM and connect to the display automatically.
+
+The launcher handles:
+- Starting the VM if it's not already running
+- Re-defining the domain if the XML has changed (e.g. after a flake update)
+- Connecting via `looking-glass-client` (with GPU passthrough) or `virt-viewer` (SPICE-only)
+
+You can also launch from the terminal:
 
 ```bash
-virsh start win11
-
-# Connect via SPICE to watch the install and interact with the VM
-virt-viewer win11
+# The launcher script is available as a desktop app, or use virsh directly:
+sudo virsh start win11
+virt-viewer -c qemu:///system win11
 ```
 
 On first boot, you will need to install Windows manually through the installer. The VirtIO drivers are automatically available on the second CD-ROM (drive `E:`). When the installer asks for a disk driver, browse to `E:\viostor\w11\amd64`.
-
-### 7. Use Looking Glass
-
-After Windows is installed and the Looking Glass host app is running in the guest:
-
-```bash
-looking-glass-client
-```
 
 ## Option Reference
 
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `windowsVM.enable` | bool | `false` | Enable the Windows 11 VM |
+| `windowsVM.appName` | string | `"Windows 11"` | Name of the desktop app launcher |
 | `windowsVM.isoPath` | string | *required* | Runtime path to Windows 11 ISO |
-| `windowsVM.gpu.pciId` | string | *required* | PCI address of GPU to pass through |
+| `windowsVM.gpu.pciId` | string or null | `null` | PCI address of GPU to pass through (null for SPICE-only) |
 | `windowsVM.gpu.audioFunction` | string or null | `null` | PCI function of GPU audio device (e.g. `"1"` for discrete GPUs) |
 | `windowsVM.vcpus` | int | `16` | Number of virtual CPUs |
 | `windowsVM.memory` | int | `32768` | Memory in MiB |
 | `windowsVM.diskSize` | int | `128` | Disk size in GiB (thin-provisioned) |
-| `windowsVM.lookingGlass.enable` | bool | `true` | Enable Looking Glass display |
+| `windowsVM.lookingGlass.enable` | bool | auto | Enable Looking Glass (defaults to `true` when `gpu.pciId` is set) |
 | `windowsVM.lookingGlass.sharedMemoryMB` | int | `32` | IVSHMEM size (32 for <=1440p, 64 for 4K) |
 | `windowsVM.usb.devices` | list | `[]` | USB devices to pass through (`{vendorId, productId}`) |
 

@@ -9,12 +9,8 @@ pkgs.testers.nixosTest {
     windowsVM = {
       enable = true;
       isoPath = "/tmp/Win11.iso";
-      gpu.pciId = "0000:00:02.0";
+      # No gpu.pciId — SPICE-only mode (no VFIO assertions needed)
     };
-
-    # Host prerequisites required by windowsVM assertions
-    boot.kernelParams = [ "intel_iommu=on" "iommu=pt" ];
-    boot.initrd.kernelModules = [ "vfio_pci" "vfio" "vfio_iommu_type1" ];
 
     virtualisation.libvirtd = {
       enable = true;
