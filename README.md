@@ -127,7 +127,30 @@ sudo virsh start win11
 virt-viewer -c qemu:///system win11
 ```
 
-On first boot, you will need to install Windows manually through the installer. The VirtIO drivers are automatically available on the second CD-ROM (drive `E:`). When the installer asks for a disk driver, browse to `E:\viostor\w11\amd64`.
+### 7. Install Windows
+
+On first boot, you will need to install Windows manually through the installer.
+
+1. The VM boots from the Windows ISO. When you see **"Press any key to boot from CD"**, press a key immediately (the timing window is short).
+2. Proceed through language/region selection.
+3. At **"Where do you want to install Windows?"**, no disks will be shown — the VirtIO disk driver isn't built into Windows.
+4. Click **"Load driver"** → **"Browse"** → navigate to the VirtIO CD-ROM (drive `E:`) → `E:\viostor\w11\amd64` → click OK.
+5. Select the **"Red Hat VirtIO SCSI controller"** driver and click **Next**.
+6. The disk should now appear as unallocated space. Select it and continue the installation.
+
+### 8. Complete Windows setup
+
+During OOBE (Out-of-Box Experience), Windows will get stuck at **"Let's connect you to a network"** because the VirtIO network driver isn't installed yet.
+
+1. Press **Shift + F10** to open a command prompt.
+2. Type `OOBE\BYPASSNRO` and press Enter — the VM will reboot.
+3. After reboot, the OOBE will now show an **"I don't have internet"** option. Click it to continue with a local account.
+
+After setup completes, install the VirtIO drivers for networking and other devices:
+
+1. Open the VirtIO CD-ROM (drive `E:`) in File Explorer.
+2. Run `virtio-win-guest-tools.exe` — this installs all VirtIO drivers (network, balloon, serial, etc.) at once.
+3. Restart the VM. Networking should now work.
 
 ## Option Reference
 
